@@ -8,6 +8,7 @@ import (
 
 func GetAllProducts(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
+		w.Write([]byte(fmt.Sprintf("method must be get!")))
 		w.WriteHeader(http.StatusInternalServerError)
 
 		return

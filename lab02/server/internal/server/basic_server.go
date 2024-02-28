@@ -9,8 +9,7 @@ import (
 
 func RunServer() {
 	// init handlers
-	http.HandleFunc("/product", handlers.AddProduct)
-	http.HandleFunc("/product/{product_id}", handlers.ProductsOperations)
+	http.HandleFunc("/product/", handlers.ProductsOperations)
 	http.HandleFunc("/products/", handlers.GetAllProducts)
 
 	// run server
