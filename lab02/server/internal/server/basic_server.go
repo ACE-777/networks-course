@@ -11,7 +11,6 @@ func RunServer() {
 	// init handlers
 	http.HandleFunc("/product/", handlers.ProductsOperations)
 	http.HandleFunc("/products/", handlers.GetAllProducts)
-	http.HandleFunc("/products//image/", handlers.ProductIcons)
 
 	// run server
 	log.Printf("<--------SERVER RUNNING---------->")
