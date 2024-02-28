@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -130,7 +131,18 @@ func ProductsOperations(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if len(uri) > 4 {
-			w.Write([]byte(productFromList.Icon))
+			buffer, err := ioutil.ReadFile(productFromList.Icon)
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte(fmt.Sprintf("can not read file")))
+
+				return
+			}
+
+			w.Header().Set("Content-Type", "image/png")
+			w.Header().Set("Content-Disposition", `attachment;filename="sid.png"`)
+
+			w.Write(buffer)
 			w.WriteHeader(http.StatusOK)
 
 			return
