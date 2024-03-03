@@ -1,7 +1,6 @@
-package main
+package internal
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"net"
@@ -9,33 +8,12 @@ import (
 	"strings"
 )
 
-func main() {
-	portFromInput := flag.String("server_port", "8080", "configure port for ws server")
-	flag.Parse()
-
-	port := fmt.Sprintf(":%v", *portFromInput)
-	listener, err := net.Listen("tcp", port)
-	if err != nil {
-		log.Printf("error while sw server starting: %v", err)
-
-		return
-	}
-
-	defer listener.Close()
-
-	log.Printf("Server is up on port%v", port)
-	conn, err := listener.Accept()
-	if err != nil {
-		log.Printf("error while adding new connection: %v", err)
-
-		return
-	}
-
+func Handler(conn net.Conn) {
 	defer conn.Close()
 	log.Printf("connection estableshd")
 
 	buf := make([]byte, 1024)
-	_, err = conn.Read(buf)
+	_, err := conn.Read(buf)
 	if err != nil {
 		log.Printf("error while reading data from user: %v", err)
 
