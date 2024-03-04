@@ -6,7 +6,6 @@ import (
 	"net"
 	"os"
 	"strings"
-	"time"
 )
 
 func Handler(conn net.Conn, sem chan struct{}) {
@@ -52,5 +51,4 @@ func Handler(conn net.Conn, sem chan struct{}) {
 	}
 
 	log.Printf("request procced successfully")
-	time.Sleep(10 * time.Second)
 }

@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"lab_3/internal"
 	"log"
 	"net"
-	"time"
+
+	internal "lab_3/internal"
 )
 
 func main() {
@@ -42,6 +42,5 @@ func main() {
 	response := string(buf)
 	fmt.Println(response)
 
-	time.Sleep(10 * time.Second)
 	<-internal.Sem
 }

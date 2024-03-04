@@ -103,6 +103,22 @@ go run cmd/ws_client/main.go --server_host 127.0.0.1 --server_port 9000 --file "
 <server.exe> server_port concurrency_level
 ```
 
+#### Демонстрация работы
+Для запуска перейти в дирекотрию lab03_D:
+```bash
+cd lab03/lab03_D/ 
+```
+
+После чего исполнить (запустить сервер):
+```bash
+go run cmd/ws_server/main.go server_port 9000 concurrency_level 2
+```
+
+После чего исполнить (запустить клиента):
+```bash
+go run cmd/ws_client/main.go --server_host 127.0.0.1 --server_port 9000 --file "files/example_file.txt"
+```
+
 ## Задачи
 
 ### Задача 1 (2 балла)

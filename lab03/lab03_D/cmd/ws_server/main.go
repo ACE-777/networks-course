@@ -11,7 +11,7 @@ import (
 
 func main() {
 	port := flag.String("server_port", "9000", "ws server port")
-	concurrencyLevel := flag.Int("concurrency_level", 2, "max active connection")
+	concurrencyLevel := flag.Int("concurrency_level", 5, "max active connection")
 
 	flag.Parse()
 
