@@ -4,7 +4,14 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 )
+
+const (
+	https = "https://"
+)
+
+var journal = make(map[string]int)
 
 type ProxyServer struct{}
 
@@ -13,6 +20,7 @@ func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodGet && r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+
 		return
 	}
 
@@ -26,29 +34,16 @@ func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Body:   r.Body,
 	}
 
-	//client := &http.Client{}
-	//_, err := client.Get(destinationURL.String())
-	//if err != nil {
-	//	fmt.Println("errr:", err)
-	//}
-
-	resp, err := http.DefaultTransport.RoundTrip(proxyRequest)
+	url := strings.TrimPrefix(proxyRequest.URL.Path, "/")
+	resp, err := http.Get(https + url)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		http.Error(w, "Cant do GET", http.StatusInternalServerError)
+		log.Printf("can done get request, err: %v", err)
 
 		return
 	}
 
-	//resp, err := client.Do(proxyRequest)
-	//if err != nil {
-	//	log.Printf("Error proxying request: %v\n", err)
-	//	http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	//	return
-	//}
-	//
-	defer resp.Body.Close()
-
-	log.Printf("Response status code: %d\n", resp.StatusCode)
+	log.Printf("Response status code: %v\n", resp.Status)
 
 	for key, values := range resp.Header {
 		for _, value := range values {
@@ -58,12 +53,15 @@ func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(resp.StatusCode)
 
+	journal[url] = resp.StatusCode
+
 	_, err = io.Copy(w, resp.Body)
 	if err != nil {
 		log.Printf("Error copying response body: %v\n", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+
 		return
 	}
 
-	log.Printf("succed execute handler")
+	log.Printf("success execute handler")
 }
