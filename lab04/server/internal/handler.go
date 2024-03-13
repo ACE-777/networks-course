@@ -1,9 +1,11 @@
 package internal
 
 import (
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -26,6 +28,9 @@ var (
 	journal = make(map[string]int)
 	cache   = make(map[string]cachedResponse)
 	mu      sync.Mutex
+
+	URLs        []bannedURL
+	banedURLMap = make(map[string]bool)
 )
 
 type ProxyServer struct{}
@@ -50,6 +55,14 @@ func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	url := strings.TrimPrefix(proxyRequest.URL.Path, "/")
+	_, ok := banedURLMap[url]
+	if ok {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("banned site!"))
+		log.Printf("Request for banned site %s", url)
+
+		return
+	}
 
 	mu.Lock()
 	cachedResp, exists := cache[url]
@@ -150,4 +163,26 @@ func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("success execute handler")
 
 	return
+}
+
+type bannedURL struct {
+	U string `json:"u"`
+}
+
+func BuildBannedURL() {
+	file, err := os.Open("banned_sites.json")
+	if err != nil {
+		log.Fatalf("Error l openning file:%v", err)
+	}
+
+	defer file.Close()
+
+	err = json.NewDecoder(file).Decode(&URLs)
+	if err != nil {
+		log.Fatalf("Error while decode json file:%v", err)
+	}
+
+	for _, url := range URLs {
+		banedURLMap[url.U] = true
+	}
 }
