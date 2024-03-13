@@ -5,14 +5,28 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 )
+
+type cachedResponse struct {
+	Body        []byte
+	ContentType string
+	StatusCode  int
+	ExpiresAt   time.Time
+}
 
 const (
 	https       = "https://"
 	contentType = "application/json"
+	cacheTime   = 1 * time.Minute
 )
 
-var journal = make(map[string]int)
+var (
+	journal = make(map[string]int)
+	cache   = make(map[string]cachedResponse)
+	mu      sync.Mutex
+)
 
 type ProxyServer struct{}
 
@@ -36,6 +50,20 @@ func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	url := strings.TrimPrefix(proxyRequest.URL.Path, "/")
+
+	mu.Lock()
+	cachedResp, exists := cache[url]
+	mu.Unlock()
+
+	if exists && time.Now().Before(cachedResp.ExpiresAt) {
+		log.Printf("Cached response found for %s", url)
+		w.Header().Set("Content-Type", cachedResp.ContentType)
+		w.WriteHeader(http.StatusNotModified)
+		w.Write(cachedResp.Body)
+
+		return
+	}
+
 	if r.Method == http.MethodGet {
 		resp, err := http.Get(https + url)
 		if err != nil {
@@ -57,13 +85,23 @@ func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		journal[url] = resp.StatusCode
 
-		_, err = io.Copy(w, resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Printf("Error copying response body: %v\n", err)
+			log.Printf("Error reading response body: %v", err)
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-
 			return
 		}
+
+		mu.Lock()
+		cache[url] = cachedResponse{
+			Body:        body,
+			ContentType: resp.Header.Get("Content-Type"),
+			StatusCode:  resp.StatusCode,
+			ExpiresAt:   time.Now().Add(cacheTime),
+		}
+		mu.Unlock()
+
+		w.Write(body)
 
 		log.Printf("success execute handler")
 
@@ -90,13 +128,24 @@ func (p *ProxyServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	journal[url] = resp.StatusCode
 
-	_, err = io.Copy(w, resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Printf("Error copying response body: %v\n", err)
+		log.Printf("Error reading response body: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 
 		return
 	}
+
+	mu.Lock()
+	cache[url] = cachedResponse{
+		Body:        body,
+		ContentType: resp.Header.Get("Content-Type"),
+		StatusCode:  resp.StatusCode,
+		ExpiresAt:   time.Now().Add(cacheTime),
+	}
+	mu.Unlock()
+
+	w.Write(body)
 
 	log.Printf("success execute handler")
 
