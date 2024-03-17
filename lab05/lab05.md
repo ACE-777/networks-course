@@ -65,6 +65,18 @@ todo
 - клиент службы выводит на консоль сообщаемое ему время
 
 #### Демонстрация работы
+```bash
+cd lab05/newsletter/cmd/newsletter_server
+
+go run main.go
+
+cd ..
+
+cd newsletter_client
+
+go run main.go
+```
+
 ![img.png](img.png)
 
 ## Задачи
