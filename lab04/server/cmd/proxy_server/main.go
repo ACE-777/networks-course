@@ -13,6 +13,8 @@ const (
 )
 
 func main() {
+	internal.BuildBannedURL()
+
 	proxy := &internal.ProxyServer{}
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%v", port))
