@@ -157,7 +157,7 @@ go run cmd/client/main.go
 процентах).
 
 #### Демонстрация работы
-todo
+![img_13.png](img_13.png)
 
 ### Г. UDP Heartbeat (4 балла)
 UDP Heartbeat (монитор доступности) подобен программе пингования. Он может быть
