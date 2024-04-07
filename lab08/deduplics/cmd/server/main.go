@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"sync"
+	"time"
 )
 
 const (
@@ -29,10 +30,11 @@ func main() {
 	packet := make([]byte, MaxPacketSize)
 	file := make([]byte, 1)
 	wg := sync.WaitGroup{}
+	var addr net.Addr
 	wg.Add(1)
 	go func() {
 		for {
-			_, addr, err := conn.ReadFrom(packet)
+			_, addr, err = conn.ReadFrom(packet)
 			if err != nil {
 				log.Printf("Error reading from client:%v", err)
 
@@ -63,11 +65,34 @@ func main() {
 		wg.Done()
 	}()
 
-	wg.Wait()
-
 	err = os.WriteFile("example_after_recieve.txt", file, 777)
 	if err != nil {
 		log.Printf("can not write file:%v", err)
 	}
 
+	fileTwo, err := os.ReadFile("ex_2.txt")
+	if err != nil {
+		log.Fatalf("can not read file:%v", err)
+	}
+
+	time.Sleep(5 * time.Second)
+	wg.Add(1)
+	go func() {
+		for i := 0; i < 10; i++ {
+			packet = make([]byte, 2)
+			packet[0] = byte(i)
+			packet[1] = fileTwo[i]
+			_, err = conn.WriteTo(packet, addr)
+			if err != nil {
+				log.Printf("Error sending ACK to client:%v", err)
+
+				continue
+			}
+
+			log.Printf("ACK received for packet %v", ack[0])
+		}
+	}()
+	wg.Done()
+
+	wg.Wait()
 }

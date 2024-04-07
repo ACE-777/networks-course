@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -85,4 +86,31 @@ func main() {
 
 	}
 
+	wg := sync.WaitGroup{}
+	ack := make([]byte, 2)
+	newFile := make([]byte, 1)
+	wg.Add(1)
+	go func() {
+		for {
+			_, err = conn.Read(ack)
+			if err != nil {
+				log.Printf("Error reading ACK:%v, send again this packet", err)
+			}
+
+			log.Printf("ACK sent for packet %v", ack[0])
+			newFile = append(newFile, ack[1])
+			if ack[0] == 9 {
+				wg.Done()
+				break
+			}
+		}
+
+	}()
+
+	wg.Wait()
+
+	err = os.WriteFile("example_after_recieve.txt", file, 777)
+	if err != nil {
+		log.Printf("can not write file:%v", err)
+	}
 }

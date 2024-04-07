@@ -44,6 +44,14 @@ go run lab08/stop_and_wait/cmd/client/main.go
 ---------
 ![img_1.png](img_1.png)
 
+
+Для запуска из корня репы
+```bash
+go run lab08/deduplics/cmd/server/main.go
+go run lab08/deduplics/cmd/client/main.go
+```
+
+
 ### Б. Дуплексная передача (2 балла)
 Поддержите возможность пересылки данных в обоих направлениях: как от клиента к серверу, так и
 наоборот. 
