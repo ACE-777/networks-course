@@ -45,11 +45,6 @@ go run lab08/stop_and_wait/cmd/client/main.go
 ![img_1.png](img_1.png)
 
 
-Для запуска из корня репы
-```bash
-go run lab08/deduplics/cmd/server/main.go
-go run lab08/deduplics/cmd/client/main.go
-```
 
 
 ### Б. Дуплексная передача (2 балла)
@@ -60,6 +55,12 @@ go run lab08/deduplics/cmd/client/main.go
 
 #### Демонстрация работы
 ![img_2.png](img_2.png)
+
+Для запуска из корня репы
+```bash
+go run lab08/deduplics/cmd/server/main.go
+go run lab08/deduplics/cmd/client/main.go
+```
 
 ### В. Контрольные суммы (1 балл)
 UDP реализует механизм контрольных сумм при передаче данных. Однако предположим, что
