@@ -79,7 +79,8 @@ func main() {
 
 		_, peer, err := conn.ReadFrom(reply)
 		if err != nil {
-			fmt.Println("Error reading ICMP reply: ", err)
+
+			//fmt.Println("Error reading ICMP reply: ", err)
 
 			continue
 		}
@@ -91,6 +92,7 @@ func main() {
 
 			continue
 		}
+
 		switch recvMsg.Type {
 		case ipv4.ICMPTypeEchoReply:
 			rtt := recvTime.Sub(sendTime)
